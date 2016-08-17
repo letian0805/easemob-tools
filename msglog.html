@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<script type="text/javascript" src="js/jquery-1.11.0.js"></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="js/config.js"></script>
+		<link rel="stylesheet" href="css/bootstrap.min.css" />
+		<link rel="stylesheet" href="css/bootstrap-theme.min.css" />
+		<title>环信后台查询工具</title>
+		<style type="text/css">
+			.input-group.msg-rest{
+				display: none;
+			}
+		</style>
+	</head>
+
+	<body>
+		<h2>消息记录查询</h2>
+		<div class="col-lg-12">
+			<div class="input-group col-lg-12">
+				<div class="input-group-addon">
+					消息类型
+				</div>
+				<select class="form-control" id="select-msg-type">
+					<option type="outgoing">上行消息</option>
+					<option type="incoming">下行消息</option>
+					<option type="offline">离线消息</option>
+					<option type="ack">ACK消息</option>
+					<option type="rest">REST消息</option>
+				</select>
+			</div>
+			<div class="input-group col-lg-12 msg-input">
+				<div class="input-group-addon">org</div>
+				<input class="form-control" type="text" id="input-org" />
+			</div>
+			<div class="input-group col-lg-12 msg-input">
+				<div class="input-group-addon">app</div>
+				<input class="form-control" type="text" id="input-app" />
+			</div>
+			<div class="input-group col-lg-12 msg-input">
+				<div class="input-group-addon">用户ID</div>
+				<input class="form-control" type="text" id="input-user-id" />
+			</div>
+			<div class="input-group col-lg-12">
+				<div class="input-group-addon">
+					<select id="select-search-type">
+						<option type="msg-content" selected="selected">消息内容</option>
+						<option type="msg-id">消息ID</option>
+					</select>
+				</div>
+				<input class="form-control" type="text" id="input-search-type" />
+			</div>
+			<div class="input-group col-lg-12">
+				<div class="input-group-addon">时间</div>
+				<input class="form-control" type="datetime-local" id="input-time" />
+			</div>
+			<br />
+			<div class="col-lg-12">
+				<input class="form-control" type="button" id="check_log" value="查询"></input>
+			</div>
+			<br />
+			<div class="col-lg-12">
+				<div class="row">
+					<div class="row">
+						<table class="table">
+							<caption>查询结果</caption>
+							<thead id="check_results">
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript">
+		var host = ToolboxConfig.tools.msglog.host;
+		var type = $("#select-msg-type option:selected").attr("type");
+		var search_type = $("#select-search-type option:selected").attr("type");
+		var time = "";
+		var org = "";
+		var app = "";
+		var uid = "";
+		var search_data = "";
+		$("#select-msg-type").on("change", function(e){
+			type = $("#select-msg-type option:selected").attr("type");
+			if(type === "rest"){
+				$(".msg-input").addClass("msg-rest");
+			}else{
+				$(".msg-input").removeClass("msg-rest");
+			}
+		});
+		function check_search_type(){
+			search_data = $("#input-search-type").val();
+			search_type = $("#select-search-type option:selected").attr("type");
+		}
+		$("#select-search-type").on("change", function(e){
+			check_search_type();
+		});
+		$("#input-search-type").on("change", function(e){
+			check_search_type();
+		});
+		$("#input-time").on("change", function(e){
+			time = $(this).val();
+			time = time.replace(/T/g, "-");
+			time = time.substr(0, time.indexOf(":"));
+		});
+		$("#input-user-id").on("change", function(e){
+			uid = $(this).val();
+		});
+		$("#input-org").on("change", function(e){
+			org = $(this).val();
+		});
+		$("#input-app").on("change", function(e){
+			app = $(this).val();
+		});
+		$("#check_log").on("click", function(e){
+			if (check_params() == false){
+				return false;
+			}
+			check_search_type();
+			var URL = host;
+			if(type == "rest"){
+				URL += "/rest/admin";
+			}else{
+				URL += "/log/" + type + "/" + org + "/" + app + "/" + uid;
+			}
+			URL += "/" + time;
+			if(search_data != ""){
+				if(search_type == "msg-content"){
+					URL += "?content=\"" + encodeURI(search_data) + "\"";
+				}else{
+					URL += "?msg_id=\"" + encodeURI(search_data) + "\"";
+				}
+			}
+			console.log(URL);
+			$.ajax({
+				type:"get",
+				url:URL,
+				success:function(Data){
+					console.log(Data);
+				},
+				error: function(req, err){
+					console.log(req.readyState + "  " + err);
+				},
+				async:false
+			});
+		});
+		function check_params(){
+			if(type != "rest"){
+				if(org == ""){
+					alert("请输入正确的org！");
+					$("#input-org").focus();
+					return false;
+				}
+				if(app == ""){
+					alert("请输入正确的app！");
+					$("#input-app").focus();
+					return false;
+				}
+				if(uid == ""){
+					alert("请输入正确的用户ID！");
+					$("#input-user-id").focus();
+					return false;
+				}
+			}
+			if(time == ""){
+				alert("请输入正确的时间格式！");
+				$("#input-time").focus();
+				return false;
+			}
+			return true;
+		}
+	</script>
+
+</html>
