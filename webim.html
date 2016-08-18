@@ -30,7 +30,7 @@
         	.btn-link.active{
         		background: #1B6D85;
         	}
-        	.zabbix-btn-group, .btn-link{
+        	.webim-btn-group, .btn-link{
         		background: #122B40;
         		text-align: center;
         	}
@@ -38,10 +38,9 @@
     </head>
 
     <body>
-        <div class="row col-lg-12 zabbix-btn-group" style="width: 100%;">
-			<div zabbix-url="http://123.56.207.23/zabbix" class="col-sm-1 btn-link active">北京</div>
-			<div zabbix-url="http://114.55.34.233/zabbix" class="col-sm-1 btn-link">杭州</div>
-			<div zabbix-url="http://54.183.159.115/zabbix" class="col-sm-1 btn-link">AWS</div>
+        <div class="row col-lg-12 webim-btn-group" style="width: 100%;">
+			<div webim-url="http://webim.easemob.com" class="col-sm-1 btn-link active">北京</div>
+			<div webim-url="http://webim.sandbox.easemob.com" class="col-sm-1 btn-link">沙箱</div>
 		</div>
 		<iframe id="tool-subpage" src="" width="100%" height="95%" frameborder="no"></iframe>
 	</body>
@@ -49,8 +48,8 @@
 		$(".btn-link").on("click", function(e){
 			$(".btn-link").removeClass("active");
 			$(this).addClass("active");
-			$("#tool-subpage").attr("src", $(this).attr("zabbix-url"));
+			$("#tool-subpage").attr("src", $(this).attr("webim-url"));
 		});
-		$("#tool-subpage").attr("src", $(".btn-link.active").attr("zabbix-url"));
+		$("#tool-subpage").attr("src", $(".btn-link.active").attr("webim-url"));
 	</script>
 </html>

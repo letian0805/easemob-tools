@@ -67,6 +67,7 @@
 						<table class="table">
 							<caption>查询结果</caption>
 							<thead id="check_results">
+								<tr id=last_child style="display: none;"></tr>
 							</thead>
 						</table>
 					</div>
@@ -75,7 +76,7 @@
 		</div>
 	</body>
 	<script type="text/javascript">
-		var host = ToolboxConfig.tools.msglog.host;
+		var host = ToolboxConfig.tools.msglog.rest;
 		var type = $("#select-msg-type option:selected").attr("type");
 		var search_type = $("#select-search-type option:selected").attr("type");
 		var time = "";
@@ -116,38 +117,92 @@
 			app = $(this).val();
 		});
 		$("#check_log").on("click", function(e){
-			if (check_params() == false){
+			var URL = make_url();
+			if (URL == false){
 				return false;
 			}
-			check_search_type();
-			var URL = host;
-			if(type == "rest"){
-				URL += "/rest/admin";
-			}else{
-				URL += "/log/" + type + "/" + org + "/" + app + "/" + uid;
-			}
-			URL += "/" + time;
-			if(search_data != ""){
-				if(search_type == "msg-content"){
-					URL += "?content=\"" + encodeURI(search_data) + "\"";
-				}else{
-					URL += "?msg_id=\"" + encodeURI(search_data) + "\"";
-				}
-			}
+			$("#check_results .msglog-result").remove();
 			console.log(URL);
 			$.ajax({
 				type:"get",
 				url:URL,
-				success:function(Data){
-					console.log(Data);
+				success:function(data){
+					console.log(data);
+					if(data == "" || data == "Not found\n"){
+						add_text_result("Not Found!");
+						return;
+					}
+					if(data.indexOf("}{") > 0){
+						data = "[" + data.replace(/}{/g, "},{") + "]";
+					}
+					try{
+						var d = JSON.parse(data);
+						if(d.length == undefined){
+							add_result([d]);
+						}else{
+							add_result(d);
+						}
+					}catch(e){
+						add_text_result(data);
+					}
 				},
 				error: function(req, err){
+					add_text_result("Not Found!");
 					console.log(req.readyState + "  " + err);
 				},
-				async:false
+				async:true
 			});
 		});
-		function check_params(){
+		function get_uid(u){
+			var start = u.indexOf("_")+1 || 0;
+			var end = u.indexOf("@") || u.length;
+			var len = end - start;
+			return u.substr(start, len);
+		}
+		function add_text_result(d){
+			$("#check_results #last_child").before(
+				"<tr class='msglog-result'><th>"+ d + "</th></tr>");
+		}
+		function add_result(data){
+			$("#check_results #last_child").before(
+				'<tr class="msglog-result">' +
+				'<th>时间</th>' +
+				'<th>ID</th>' +
+				'<th>聊天类型</th>' +
+				'<th>消息类型</th>' +
+				'<th>发送方</th>' +
+				'<th>接收方</th>' +
+				'<th>消息体</th>' +
+				'</tr>');
+			for(var i = 0; i < data.length; i++){
+				var d = data[i];
+				var dt = new Date();
+				dt.setTime(d.timestamp);
+				var dt_str = dt.getFullYear() + "/" +
+					(dt.getMonth() + 1) + "/" +
+					dt.getDate() + " " +
+					dt.getHours() + ":" +
+					dt.getMinutes() + ":" +
+					dt.getSeconds();
+				var msglog = "<tr class='msglog-result'>";
+				var from = get_uid(d.from);
+				var to = get_uid(d.to);
+				msglog += "<th>" + dt_str + "</th>";
+				msglog += "<th>" + d.msg_id + "</th>";
+				msglog += "<th>" + d.chat_type + "</th>";
+				msglog += "<th>" + d.direction + "</th>";
+				msglog += "<th>" + from + "</th>";
+				msglog += "<th>" + to + "</th>";
+				if(d.payload == ""){
+					msglog += "<th></th></tr>";
+				}else{
+					msglog += "<th>" + d.payload.bodies[0].msg + "</th></tr>";
+				}
+				$("#check_results #last_child").before(msglog);
+			}
+		}
+		function make_url(){
+			check_search_type();
 			if(type != "rest"){
 				if(org == ""){
 					alert("请输入正确的org！");
@@ -170,7 +225,21 @@
 				$("#input-time").focus();
 				return false;
 			}
-			return true;
+			var URL = host + "/message";
+			if(type == "rest"){
+				URL += "/rest/admin";
+			}else{
+				URL += "/log/" + type + "/" + org + "/" + app + "/" + uid;
+			}
+			URL += "/" + time;
+			if(search_data != ""){
+				if(search_type == "msg-content"){
+					URL += "?content=" + encodeURI(search_data);
+				}else{
+					URL += "?msg_id=" + encodeURI(search_data) ;
+				}
+			}
+			return URL;
 		}
 	</script>
 

@@ -10,18 +10,25 @@
 		<link rel="stylesheet" href="css/bootstrap-theme.min.css" />
 		<style>
 		html, body{height: 100%;}
+		body, .container{
+			background: #3C583C;
+		}
+		#toolbox-menu, #toolbox-menu{
+			background: #122B40;
+			color: white;
+		}
 		</style>
 	</head>
 	<body>
 		<div class="container col-lg-11" style="height:100%">
 			<div class="col-md-2">
-				<h4 id="toolbox-desc">后台查询工具</h4>
+				<h4 id="toolbox-desc" style="color: #EBC316;"><b>环信后台工具箱</b></h4>
 				<ul class="list-group" id="toolbox-menu">
 					<li class="last-item hidden"></li>
 				</ul>
 			</div>
-			<div class="col-md-10" id="tool-page" style="height:100%">
-				<iframe id="tool-subpage" width="100%" height="95%" frameborder="no"></iframe>
+			<div class="col-md-10" id="tool-page" style="height:99%">
+				<iframe id="tool-subpage" width="100%" height="100%" frameborder="no"></iframe>
 			</div>
 		</div>
 	</body>
