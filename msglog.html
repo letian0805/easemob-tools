@@ -21,6 +21,18 @@
 			<h3>消息记录查询</h3>
 			<div class="input-group col-lg-12">
 				<div class="input-group-addon">
+					集群
+				</div>
+				<select class="form-control" id="select-msg-cluster">
+					<option type="ebs">ebs</option>
+					<option type="vip6">vip6</option>
+					<option type="vip5">vip5</option>
+					<option type="vip1">vip1</option>
+					<option type="aws">aws</option>
+				</select>
+			</div>
+			<div class="input-group col-lg-12">
+				<div class="input-group-addon">
 					消息类型
 				</div>
 				<select class="form-control" id="select-msg-type">
@@ -28,7 +40,6 @@
 					<option type="incoming">下行消息</option>
 					<option type="offline">离线消息</option>
 					<option type="ack">ACK消息</option>
-					<option type="rest">REST消息</option>
 				</select>
 			</div>
 			<div class="input-group col-lg-12 msg-input">
@@ -82,11 +93,6 @@
 		var search_data = "";
 		$("#select-msg-type").on("change", function(e){
 			type = $("#select-msg-type option:selected").attr("type");
-			if(type === "rest"){
-				$(".msg-input").addClass("msg-rest");
-			}else{
-				$(".msg-input").removeClass("msg-rest");
-			}
 		});
 		function check_search_type(){
 			search_data = $("#input-search-type").val();
@@ -123,14 +129,14 @@
 				type:"get",
 				url:URL,
 				success:function(data){
-					console.log(data);
 					if(data == "" || data == "Not found\n"){
 						add_text_result("Not Found!");
 						return;
 					}
-					if(data.indexOf("}{") > 0){
-						data = "[" + data.replace(/}{/g, "},{") + "]";
+					if(data.indexOf("}\n{") > 0){
+						data = "[" + data.replace(/}\n{/g, "},{") + "]";
 					}
+					console.log(data);
 					try{
 						var d = JSON.parse(data);
 						if(d.length == undefined){
@@ -199,22 +205,20 @@
 		}
 		function make_url(){
 			check_search_type();
-			if(type != "rest"){
-				if(org == ""){
-					alert("请输入正确的org！");
-					$("#input-org").focus();
-					return false;
-				}
-				if(app == ""){
-					alert("请输入正确的app！");
-					$("#input-app").focus();
-					return false;
-				}
-				if(uid == ""){
-					alert("请输入正确的用户ID！");
-					$("#input-user-id").focus();
-					return false;
-				}
+			if(org == ""){
+				alert("请输入正确的org！");
+				$("#input-org").focus();
+				return false;
+			}
+			if(app == ""){
+				alert("请输入正确的app！");
+				$("#input-app").focus();
+				return false;
+			}
+			if(uid == ""){
+				alert("请输入正确的用户ID！");
+				$("#input-user-id").focus();
+				return false;
 			}
 			if(time == ""){
 				alert("请输入正确的时间格式！");
